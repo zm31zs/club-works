@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>管理后台 - 作品展</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="admin-wrap">
+  <h1>作品展 · 管理后台</h1>
+  <div class="admin-sub">仅管理员可见。数据保存在本仓库的 data/content.json 中。</div>
+
+  <!-- 登录 -->
+  <div class="panel" id="login-panel">
+    <h2>登录（连接你的 GitHub 仓库）</h2>
+    <div class="form-row">
+      <div class="field"><label>GitHub 用户名</label><input id="in-owner" placeholder="例如 your-name"></div>
+      <div class="field"><label>仓库名</label><input id="in-repo" placeholder="club-works"></div>
+      <div class="field"><label>分支</label><input id="in-branch" placeholder="main"></div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>访问令牌（PAT）</label><input id="in-token" type="password" placeholder="github_pat_..."></div>
+    </div>
+    <div class="toolbar">
+      <button class="btn btn-primary" id="btn-login">登录并读取作品数据</button>
+    </div>
+    <div class="help">
+      <strong>令牌是什么、怎么拿？</strong>
+      <ol>
+        <li>打开 GitHub → 右上角头像 → Settings → 最底部 Developer settings → Personal access tokens → Fine-grained tokens → Generate new token</li>
+        <li>Token name 随便填（如“作品展后台”），Expiration 选 90 天</li>
+        <li>Repository access 选 <b>Only select repositories</b>，只勾选你的作品展仓库</li>
+        <li>Permissions → Repository permissions → <b>Contents</b> 选 <b>Read and write</b></li>
+        <li>生成后复制那串字符，粘贴到上方输入框即可</li>
+      </ol>
+      令牌只保存在你当前浏览器，不会写入网站代码，也不会出现在前台页面。
+    </div>
+  </div>
+
+  <!-- 主体 -->
+  <div id="app-panel" style="display:none">
+    <div class="panel">
+      <div class="toolbar">
+        <button class="btn btn-primary" id="btn-save">保存并发布</button>
+        <span class="status" id="status"></span>
+        <span class="spacer"></span>
+        <button class="btn" id="btn-logout">退出登录</button>
+      </div>
+      <div class="help">修改后必须点「保存并发布」才会写入仓库并生效；约 30–60 秒后刷新前台可见。</div>
+    </div>
+
+    <div class="admin-cols">
+      <!-- 学生列表 -->
+      <div class="panel">
+        <h2>学生名单</h2>
+        <div id="student-list"></div>
+        <div class="toolbar" style="margin-top:14px">
+          <button class="btn btn-primary btn-sm" id="btn-add-student">+ 新增学生</button>
+        </div>
+        <div class="divider"></div>
+        <div class="toolbar">
+          <button class="btn btn-sm" id="btn-rename">改名</button>
+          <button class="btn btn-sm" id="btn-stu-visible">上架/下架</button>
+          <button class="btn btn-danger btn-sm" id="btn-del-student">删除</button>
+        </div>
+      </div>
+
+      <!-- 作品区 -->
+      <div class="panel">
+        <h2>作品管理 · <span id="work-student-name">—</span></h2>
+        <div class="toolbar">
+          <button class="btn btn-primary btn-sm" id="btn-add-work">+ 新增作品</button>
+        </div>
+        <div id="work-list"></div>
+        <input type="hidden" id="cur-wid" value="">
+        <div id="edit-area"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="assets/config.js"></script>
+<script src="assets/store.js"></script>
+<script src="assets/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>社团学生作品展</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-row">
+      <div>
+        <h1 id="site-title">社团学生作品展</h1>
+        <p id="site-subtitle">点击姓名，查看同学们的作品</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="notice">本页面展示学生作品，仅供查看。若涉及作品内容问题，请联系社团负责老师。</div>
+    <div id="error" class="error-box" style="display:none"></div>
+
+    <div class="search-row">
+      <input id="search" class="search-input" type="search" placeholder="输入姓名搜索…">
+    </div>
+
+    <div id="grid" class="grid"></div>
+  </main>
+
+  <footer class="site-footer">社团学生作品展 · 学生作品归原作者所有</footer>
+  <div class="lightbox" id="lightbox"><img src="" alt="作品图片"></div>
+
+  <script src="assets/config.js"></script>
+  <script src="assets/store.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>

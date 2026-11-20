@@ -1,0 +1,92 @@
+{
+  "meta": {
+    "title": "社团学生作品展"
+  },
+  "students": [
+    {
+      "id": "s_linnathan",
+      "name": "linnathan",
+      "visible": true,
+      "order": 1,
+      "works": [
+        {
+          "id": "w_linnathan_1",
+          "title": "学生作品",
+          "desc": "",
+          "image": "",
+          "link": "https://aaf7538e5eec101ed.app.workbuddy.host/?sharecode=EIU2CWQXQC",
+          "visible": true,
+          "order": 1
+        }
+      ]
+    },
+    {
+      "id": "s_liuzhaorui",
+      "name": "刘钊睿",
+      "visible": true,
+      "order": 2,
+      "works": [
+        {
+          "id": "w_liuzhaorui_1",
+          "title": "学生作品",
+          "desc": "",
+          "image": "",
+          "link": "https://a55530602650aab67.app.workbuddy.host/?sharecode=7A2WSW4ATO",
+          "visible": true,
+          "order": 1
+        }
+      ]
+    },
+    {
+      "id": "s_nihaozhe",
+      "name": "倪浩哲",
+      "visible": true,
+      "order": 3,
+      "works": [
+        {
+          "id": "w_nihaozhe_1",
+          "title": "学生作品",
+          "desc": "",
+          "image": "",
+          "link": "https://app-fpogxot58zr5.miaoda.online",
+          "visible": true,
+          "order": 1
+        }
+      ]
+    },
+    {
+      "id": "s_suhaoxuan",
+      "name": "苏浩轩",
+      "visible": true,
+      "order": 4,
+      "works": [
+        {
+          "id": "w_suhaoxuan_1",
+          "title": "学生作品",
+          "desc": "",
+          "image": "",
+          "link": "https://www.miaoda.cn/projects/app-fpoi7aev37k1/view/prd?previousPage=projects",
+          "visible": true,
+          "order": 1
+        }
+      ]
+    },
+    {
+      "id": "s_zhangjiaen",
+      "name": "张佳恩",
+      "visible": true,
+      "order": 5,
+      "works": [
+        {
+          "id": "w_zhangjiaen_1",
+          "title": "学生作品",
+          "desc": "",
+          "image": "",
+          "link": "https://www.miaoda.cn/share/conversation?id=cs-854b149042954758a5bfa806b0dbef92",
+          "visible": true,
+          "order": 1
+        }
+      ]
+    }
+  ]
+}

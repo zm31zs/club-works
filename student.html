@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>作品列表</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-row">
+      <div>
+        <h1 id="student-name">作品列表</h1>
+        <p>点击图片可放大，点击「查看作品」打开项目链接</p>
+      </div>
+      <a class="btn-back" href="index.html">← 返回首页</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div id="error" class="error-box" style="display:none"></div>
+    <div id="work-grid" class="work-grid"></div>
+  </main>
+
+  <footer class="site-footer">社团学生作品展 · 学生作品归原作者所有</footer>
+  <div class="lightbox" id="lightbox"><img src="" alt="作品图片"></div>
+
+  <script src="assets/config.js"></script>
+  <script src="assets/store.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>
