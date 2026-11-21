@@ -13,8 +13,9 @@
   }
   function uid(p) { return p + '_' + Date.now().toString(36) + Math.floor(Math.random() * 1000); }
   function status(msg, isErr) {
-    var el = $('status');
-    if (el) { el.textContent = msg || ''; el.className = 'status' + (isErr ? ' err' : ''); }
+    var cls = 'status' + (isErr ? ' err' : '');
+    var a = $('status'); if (a) { a.textContent = msg || ''; a.className = cls; }
+    var b = $('login-status'); if (b) { b.textContent = msg || ''; b.className = cls; }
   }
   function blankData() { return { meta: { title: C.siteTitle || '作品展' }, students: [] }; }
 
