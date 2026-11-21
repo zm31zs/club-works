@@ -35,13 +35,24 @@
     var el = document.getElementById('error');
     if (el) { el.style.display = 'block'; el.textContent = msg; }
   }
-  function setTitle() {
-    if (C.siteTitle) document.title = C.siteTitle;
+
+  // 标题优先取数据文件里的 meta（后台可改），没有再回退到 config.js
+  function applySiteMeta(meta) {
+    var m = meta || {};
+    var t = String(m.title || C.siteTitle || '').trim();
+    var s = String(m.subtitle || C.siteSubtitle || '').trim();
+    window.__cwMeta = { title: t, subtitle: s };
+    if (t) document.title = t;
     var h = document.getElementById('site-title');
-    var s = document.getElementById('site-subtitle');
-    if (h && C.siteTitle) h.textContent = C.siteTitle;
-    if (s && C.siteSubtitle) s.textContent = C.siteSubtitle;
+    var sub = document.getElementById('site-subtitle');
+    if (h && t) h.textContent = t;
+    if (sub && s) sub.textContent = s;
+    var names = document.querySelectorAll('[data-site-name]');
+    for (var i = 0; i < names.length; i++) {
+      if (t) names[i].textContent = t + (names[i].getAttribute('data-site-name') || '');
+    }
   }
+  function setTitle() { applySiteMeta(null); }
 
   // 首页：姓名网格
   function renderHome(data) {
@@ -76,7 +87,8 @@
 
     if (!s) { showError('找不到该学生，请从首页重新进入。'); if (nameEl) nameEl.textContent = '未找到'; return; }
     if (nameEl) nameEl.textContent = s.name;
-    document.title = s.name + ' 的作品 - ' + (C.siteTitle || '作品展');
+    var siteTitle = (window.__cwMeta && window.__cwMeta.title) || C.siteTitle || '作品展';
+    document.title = s.name + ' 的作品 - ' + siteTitle;
 
     var works = (s.works || []).filter(function (w) { return w.visible !== false; });
     works.sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
@@ -115,6 +127,7 @@
     global.CWStore.loadPublic(function (err, data) {
       if (err) { showError('数据加载失败：' + err.message + '。请确认仓库已开启 GitHub Pages，且 data/content.json 已上传。'); return; }
       window.__cwData = data;
+      applySiteMeta(data && data.meta);
       if (document.getElementById('grid')) renderHome(data);
       if (document.getElementById('work-grid')) renderStudent(data);
     });

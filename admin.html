@@ -53,6 +53,18 @@
       <div class="help">修改后必须点「保存并发布」才会写入仓库并生效；约 30–60 秒后刷新前台可见。删除操作可通过 Git 历史恢复。</div>
     </div>
 
+    <div class="panel">
+      <h2>网站设置</h2>
+      <div class="form-row">
+        <div class="field"><label>网站标题（首页大标题）</label><input id="set-title" placeholder="例如：社团学生作品展"></div>
+        <div class="field"><label>副标题（标题下方一行小字）</label><input id="set-subtitle" placeholder="例如：点击姓名，查看同学们的作品"></div>
+      </div>
+      <div class="toolbar" style="margin-top:12px">
+        <button class="btn" id="btn-save-site">保存标题设置</button>
+        <span class="mini">改完后仍需点顶部「保存并发布」才会更新到网站</span>
+      </div>
+    </div>
+
     <div class="admin-cols">
       <!-- 学生列表 -->
       <div class="panel">

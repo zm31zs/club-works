@@ -122,6 +122,11 @@
     var ci = $('conn-info');
     if (ci) ci.textContent = '已连接 ' + S.getOwner() + '/' + S.getRepo() + ' @ ' + S.getBranch();
     markDirty(false);
+    // 填充网站标题设置
+    var meta = state.data.meta || {};
+    var stEl = $('set-title'), sbEl = $('set-subtitle');
+    if (stEl) stEl.value = meta.title || C.siteTitle || '';
+    if (sbEl) sbEl.value = meta.subtitle || C.siteSubtitle || '';
     renderStudents();
     renderWorks();
   }
@@ -294,6 +299,16 @@
 
   // 把编辑表单里的内容同步回数据（避免改了标题没点「保存作品信息」就发布，导致前台无变化）
   function commitForm() {
+    // 网站标题设置
+    var stEl = $('set-title');
+    if (stEl) {
+      state.data.meta = state.data.meta || {};
+      var tv = stEl.value.trim();
+      if (tv) state.data.meta.title = tv;
+      var sbEl = $('set-subtitle');
+      state.data.meta.subtitle = sbEl ? sbEl.value.trim() : '';
+    }
+
     var wid = $('cur-wid') ? $('cur-wid').value : '';
     if (!wid) return;
     var w = getWork(wid);
@@ -362,6 +377,22 @@
       });
     };
     $('btn-save').onclick = saveAll;
+
+    // 网站标题设置
+    ['set-title', 'set-subtitle'].forEach(function (id) {
+      var el = $(id);
+      if (el) el.addEventListener('input', function () { markDirty(true); });
+    });
+    $('btn-save-site').onclick = function () {
+      var stEl = $('set-title'), sbEl = $('set-subtitle');
+      var t = stEl ? stEl.value.trim() : '';
+      if (!t) { toast('网站标题不能为空', 'err'); if (stEl) stEl.focus(); return; }
+      state.data.meta = state.data.meta || {};
+      state.data.meta.title = t;
+      state.data.meta.subtitle = sbEl ? sbEl.value.trim() : '';
+      markDirty(true);
+      toast('标题已保存，还需点顶部「保存并发布」才会更新到网站');
+    };
 
     $('btn-add-student').onclick = function () {
       askText({ title: '新增学生', label: '学生姓名（全名）', placeholder: '例如：张三' }, function (name) {
