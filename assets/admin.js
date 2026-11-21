@@ -19,6 +19,38 @@
   }
   function blankData() { return { meta: { title: C.siteTitle || '作品展' }, students: [] }; }
 
+  // 自定义对话框：type='prompt' 带输入框；type='confirm' 只有文字
+  function dialog(opts, cb) {
+    var mask = $('cw-modal'), title = $('cw-modal-title'), msg = $('cw-modal-msg');
+    var label = $('cw-modal-label'), input = $('cw-modal-input');
+    var ok = $('cw-modal-ok'), cancel = $('cw-modal-cancel');
+    title.textContent = opts.title || '提示';
+    if (opts.message) { msg.textContent = opts.message; msg.style.display = ''; }
+    else { msg.style.display = 'none'; }
+    var isPrompt = opts.type === 'prompt';
+    if (isPrompt) {
+      label.textContent = opts.label || ''; label.style.display = '';
+      input.style.display = ''; input.value = opts.value || ''; input.placeholder = opts.placeholder || '';
+    } else {
+      label.style.display = 'none'; input.style.display = 'none';
+    }
+    ok.textContent = opts.okText || '确定';
+    mask.style.display = 'flex';
+    setTimeout(function () { isPrompt ? input.focus() : ok.focus(); }, 30);
+
+    function done(val) {
+      mask.style.display = 'none';
+      ok.onclick = cancel.onclick = input.onkeydown = mask.onclick = null;
+      if (val !== null && cb) cb(val);
+    }
+    ok.onclick = function () { done(isPrompt ? input.value : true); };
+    cancel.onclick = function () { done(null); };
+    input.onkeydown = function (e) { if (e.key === 'Enter') done(input.value); if (e.key === 'Escape') done(null); };
+    mask.onclick = function (e) { if (e.target === mask) done(null); };
+  }
+  function askText(opts, cb) { opts.type = 'prompt'; dialog(opts, cb); }
+  function askConfirm(opts, cb) { opts.type = 'confirm'; dialog(opts, cb); }
+
   // 登录
   function doLogin() {
     var owner = $('in-owner').value.trim();
@@ -184,10 +216,12 @@
       renderWorks(); status('已' + (w.visible ? '上架' : '下架') + '，记得点「保存并发布」');
     };
     $('btn-delwork').onclick = function () {
-      if (!confirm('确定删除作品「' + w.title + '」？删除后仍可通过 Git 历史恢复。')) return;
-      s.works = s.works.filter(function (x) { return x.id !== w.id; });
-      $('cur-wid').value = '';
-      renderWorks(); status('作品已删除，记得点「保存并发布」');
+      askConfirm({ title: '删除作品', message: '确定删除作品「' + w.title + '」？删除后可通过 Git 历史恢复。', okText: '删除' }, function (ok) {
+        if (!ok) return;
+        s.works = s.works.filter(function (x) { return x.id !== w.id; });
+        $('cur-wid').value = '';
+        renderWorks(); status('作品已删除，记得点「保存并发布」');
+      });
     };
     $('btn-upload').onclick = function () {
       var f = $('e-file').files[0];
@@ -224,19 +258,22 @@
     $('btn-login').onclick = doLogin;
     $('in-token').addEventListener('keydown', function (e) { if (e.key === 'Enter') doLogin(); });
     $('btn-logout').onclick = function () {
-      if (!confirm('退出后需重新输入令牌，确定退出？')) return;
-      S.clearAuth(); state = { data: null, sha: null, selected: null };
-      showLogin(); status('已退出');
+      askConfirm({ title: '退出登录', message: '退出后需要重新输入令牌才能进入后台，确定退出？', okText: '退出' }, function (ok) {
+        if (!ok) return;
+        S.clearAuth(); state = { data: null, sha: null, selected: null };
+        showLogin(); status('已退出');
+      });
     };
     $('btn-save').onclick = saveAll;
 
     $('btn-add-student').onclick = function () {
-      var name = prompt('输入学生姓名（全名）：');
-      if (!name || !name.trim()) return;
-      var s = { id: uid('s'), name: name.trim(), visible: true, order: state.data.students.length + 1, works: [] };
-      state.data.students.push(s);
-      state.selected = s.id;
-      renderStudents(); renderWorks(); status('学生已添加，记得点「保存并发布」');
+      askText({ title: '新增学生', label: '学生姓名（全名）', placeholder: '例如：张三' }, function (name) {
+        if (!name || !name.trim()) return;
+        var s = { id: uid('s'), name: name.trim(), visible: true, order: state.data.students.length + 1, works: [] };
+        state.data.students.push(s);
+        state.selected = s.id;
+        renderStudents(); renderWorks(); status('学生已添加，记得点「保存并发布」');
+      });
     };
 
     $('student-list').addEventListener('click', function (e) {
@@ -262,10 +299,11 @@
 
     $('btn-rename').onclick = function () {
       var s = getSelected(); if (!s) { status('请先选择学生', true); return; }
-      var name = prompt('修改姓名：', s.name);
-      if (!name || !name.trim()) return;
-      s.name = name.trim();
-      renderStudents(); renderWorks(); status('姓名已修改，记得点「保存并发布」');
+      askText({ title: '修改学生姓名', label: '姓名', value: s.name }, function (name) {
+        if (!name || !name.trim()) return;
+        s.name = name.trim();
+        renderStudents(); renderWorks(); status('姓名已修改，记得点「保存并发布」');
+      });
     };
     $('btn-stu-visible').onclick = function () {
       var s = getSelected(); if (!s) return;
@@ -274,21 +312,24 @@
     };
     $('btn-del-student').onclick = function () {
       var s = getSelected(); if (!s) return;
-      if (!confirm('确定删除学生「' + s.name + '」及其全部作品？可用 Git 历史恢复。')) return;
-      state.data.students = state.data.students.filter(function (x) { return x.id !== s.id; });
-      state.selected = state.data.students.length ? state.data.students[0].id : null;
-      renderStudents(); renderWorks(); status('学生已删除，记得点「保存并发布」');
+      askConfirm({ title: '删除学生', message: '确定删除「' + s.name + '」及其全部作品？删除后可通过 Git 历史恢复。', okText: '删除' }, function (ok) {
+        if (!ok) return;
+        state.data.students = state.data.students.filter(function (x) { return x.id !== s.id; });
+        state.selected = state.data.students.length ? state.data.students[0].id : null;
+        renderStudents(); renderWorks(); status('学生已删除，记得点「保存并发布」');
+      });
     };
 
     $('btn-add-work').onclick = function () {
       var s = getSelected(); if (!s) { status('请先选择学生', true); return; }
-      var title = prompt('输入作品标题：');
-      if (!title || !title.trim()) return;
-      s.works = s.works || [];
-      var w = { id: uid('w'), title: title.trim(), desc: '', image: '', link: '', visible: true, order: s.works.length + 1 };
-      s.works.push(w);
-      $('cur-wid').value = w.id;
-      renderWorks(); renderStudents(); status('作品已添加，记得点「保存并发布」');
+      askText({ title: '新增作品', label: '作品标题', placeholder: '例如：单词大冒险' }, function (title) {
+        if (!title || !title.trim()) return;
+        s.works = s.works || [];
+        var w = { id: uid('w'), title: title.trim(), desc: '', image: '', link: '', visible: true, order: s.works.length + 1 };
+        s.works.push(w);
+        $('cur-wid').value = w.id;
+        renderWorks(); renderStudents(); status('作品已添加，记得点「保存并发布」');
+      });
     };
 
     $('work-list').addEventListener('click', function (e) {
