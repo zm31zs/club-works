@@ -28,12 +28,38 @@
     }, type === 'err' ? 5200 : 3000);
   }
 
-  // 顶部状态栏 + 浮动提示同时更新
+  // 记住最近一次点击的按钮，用于给按钮自身加反馈
+  var lastClickedBtn = null;
+
+  // 顶部状态栏 + 浮动提示 + 按钮反馈同时更新
   function status(msg, isErr) {
     var cls = 'status' + (isErr ? ' err' : '');
     var a = $('status'); if (a) { a.textContent = msg || ''; a.className = cls; }
     var b = $('login-status'); if (b) { b.textContent = msg || ''; b.className = cls; }
-    toast(msg, isErr ? 'err' : (/^正在/.test(msg || '') ? 'info' : 'ok'));
+    var busy = /^正在/.test(msg || '');
+    toast(msg, isErr ? 'err' : (busy ? 'info' : 'ok'));
+    if (lastClickedBtn && !lastClickedBtn.disabled) {
+      flashBtn(lastClickedBtn, isErr ? 'err' : (busy ? 'busy' : 'ok'));
+      lastClickedBtn = null;
+    }
+  }
+
+  // 按钮点击反馈：给按钮本身加成功/失败/处理中的视觉状态
+  function flashBtn(btn, kind) {
+    if (!btn) return;
+    var cls = kind === 'err' ? 'btn-fail' : (kind === 'busy' ? 'btn-busy' : 'btn-ok');
+    btn.classList.remove('btn-ok');
+    btn.classList.remove('btn-fail');
+    btn.classList.remove('btn-busy');
+    // 强制回流，保证连续点击时动画能重播
+    void btn.offsetWidth;
+    btn.classList.add(cls);
+  }
+  function clearFlash(btn) {
+    if (!btn) return;
+    btn.classList.remove('btn-ok');
+    btn.classList.remove('btn-fail');
+    btn.classList.remove('btn-busy');
   }
 
   // 有未发布到网站的数据修改时，让顶部按钮显眼
@@ -245,7 +271,7 @@
     $('btn-savework').onclick = function () {
       var self = this;
       var t = $('e-title').value.trim();
-      if (!t) { toast('作品标题不能为空', 'err'); $('e-title').focus(); return; }
+      if (!t) { toast('作品标题不能为空', 'err'); flashBtn(self, 'err'); $('e-title').focus(); return; }
       w.title = t;
       w.desc = $('e-desc').value.trim();
       w.link = $('e-link').value.trim();
@@ -257,6 +283,7 @@
       renderWorks(true);
       markDirty(true);
       toast('作品信息已保存到列表，还需点顶部「保存并发布」才会更新到网站');
+      flashBtn(self, 'ok');
 
       // 按钮自身给出确认反馈
       self.classList.add('saved');
@@ -331,6 +358,7 @@
     btn.disabled = true;
     btn.classList.remove('has-dirty');
     btn.textContent = '正在发布…';
+    flashBtn(btn, 'busy');
     toast('正在提交到 GitHub…');
 
     // 网络无响应时的兜底，避免按钮一直卡住
@@ -354,6 +382,7 @@
         var m = String(err.message || '');
         if (/409|does not match|already exists/i.test(m)) {
           toast('发布失败：仓库数据已被改动，请刷新页面重新登录后再试一次。', 'err');
+          flashBtn(btn, 'err');
         } else {
           status(m, true);
         }
@@ -361,12 +390,25 @@
       }
       state.sha = res.content.sha;
       markDirty(false);
+      flashBtn(btn, 'ok');
       status('已发布！约 30–60 秒后刷新前台即可看到更新。');
     });
   }
 
   // 事件绑定
   function bind() {
+    // 全局捕获：记录点击的按钮（含列表里动态生成的排序按钮）
+    document.addEventListener('click', function (e) {
+      var t = e.target;
+      while (t && t !== document) {
+        if (t.tagName && t.tagName.toLowerCase() === 'button') { lastClickedBtn = t; break; }
+        t = t.parentNode;
+      }
+      // 动画结束后自动清除反馈色
+      var b = lastClickedBtn;
+      if (b) setTimeout(function () { clearFlash(b); }, 1400);
+    }, true);
+
     $('btn-login').onclick = doLogin;
     $('in-token').addEventListener('keydown', function (e) { if (e.key === 'Enter') doLogin(); });
     $('btn-logout').onclick = function () {
@@ -384,14 +426,16 @@
       if (el) el.addEventListener('input', function () { markDirty(true); });
     });
     $('btn-save-site').onclick = function () {
+      var self = this;
       var stEl = $('set-title'), sbEl = $('set-subtitle');
       var t = stEl ? stEl.value.trim() : '';
-      if (!t) { toast('网站标题不能为空', 'err'); if (stEl) stEl.focus(); return; }
+      if (!t) { toast('网站标题不能为空', 'err'); flashBtn(self, 'err'); if (stEl) stEl.focus(); return; }
       state.data.meta = state.data.meta || {};
       state.data.meta.title = t;
       state.data.meta.subtitle = sbEl ? sbEl.value.trim() : '';
       markDirty(true);
       toast('标题已保存，还需点顶部「保存并发布」才会更新到网站');
+      flashBtn(self, 'ok');
     };
 
     $('btn-add-student').onclick = function () {
@@ -414,8 +458,10 @@
       if (btn) {
         var act = btn.getAttribute('data-act');
         var idx = state.data.students.indexOf(s);
-        if (act === 'up' && idx > 0) { var t = state.data.students[idx - 1]; state.data.students[idx - 1] = s; state.data.students[idx] = t; }
-        if (act === 'down' && idx < state.data.students.length - 1) { var t2 = state.data.students[idx + 1]; state.data.students[idx + 1] = s; state.data.students[idx] = t2; }
+        var moved = false;
+        if (act === 'up' && idx > 0) { var t = state.data.students[idx - 1]; state.data.students[idx - 1] = s; state.data.students[idx] = t; moved = true; }
+        if (act === 'down' && idx < state.data.students.length - 1) { var t2 = state.data.students[idx + 1]; state.data.students[idx + 1] = s; state.data.students[idx] = t2; moved = true; }
+        if (!moved) { status('已经是最' + (act === 'up' ? '前' : '后') + '面了'); return; }
         state.data.students.forEach(function (x, i) { x.order = i + 1; });
         renderStudents(); markDirty(true); status('顺序已调整，记得点「保存并发布」');
         return;
@@ -423,6 +469,7 @@
       state.selected = sid;
       $('cur-wid').value = '';
       renderStudents(); renderWorks();
+      status('已选中「' + s.name + '」，右侧显示其作品');
     });
 
     $('btn-rename').onclick = function () {
@@ -471,14 +518,17 @@
       if (btn && (btn.getAttribute('data-act') === 'wup' || btn.getAttribute('data-act') === 'wdown')) {
         var act = btn.getAttribute('data-act');
         var idx = s.works.indexOf(w);
-        if (act === 'wup' && idx > 0) { var t = s.works[idx - 1]; s.works[idx - 1] = w; s.works[idx] = t; }
-        if (act === 'wdown' && idx < s.works.length - 1) { var t2 = s.works[idx + 1]; s.works[idx + 1] = w; s.works[idx] = t2; }
+        var moved = false;
+        if (act === 'wup' && idx > 0) { var t = s.works[idx - 1]; s.works[idx - 1] = w; s.works[idx] = t; moved = true; }
+        if (act === 'wdown' && idx < s.works.length - 1) { var t2 = s.works[idx + 1]; s.works[idx + 1] = w; s.works[idx] = t2; moved = true; }
+        if (!moved) { status('已经是最' + (act === 'wup' ? '前' : '后') + '面了'); return; }
         s.works.forEach(function (x, i) { x.order = i + 1; });
         renderWorks(true); markDirty(true); status('顺序已调整，记得点「保存并发布」');
         return;
       }
       $('cur-wid').value = wid;
       renderEditForm();
+      status('已选中作品「' + w.title + '」，可在下方编辑');
     });
   }
 

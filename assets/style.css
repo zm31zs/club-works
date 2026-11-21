@@ -305,3 +305,18 @@ code { background: #f0f1f3; padding: 1px 5px; border-radius: 4px; font-size: 12p
   .toast-wrap { bottom: 16px; }
   .toast { font-size: 13px; padding: 11px 16px; }
 }
+
+/* ========== 按钮点击反馈 ========== */
+.btn.btn-ok {
+  background: #12805c !important; border-color: #12805c !important; color: #fff !important;
+  box-shadow: 0 0 0 3px rgba(18,128,92,.22); animation: btnPulse .35s ease;
+}
+.btn.btn-err {
+  background: #c0392b !important; border-color: #c0392b !important; color: #fff !important;
+  box-shadow: 0 0 0 3px rgba(192,57,43,.22); animation: btnShake .3s ease;
+}
+.btn.btn-busy {
+  box-shadow: 0 0 0 3px rgba(47,111,235,.25); opacity: .85; cursor: wait;
+}
+@keyframes btnPulse { 0% { transform: scale(.94); } 55% { transform: scale(1.04); } 100% { transform: scale(1); } }
+@keyframes btnShake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
