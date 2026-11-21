@@ -67,15 +67,29 @@
 
   // 读取仓库文件内容，返回 {content, sha}；不存在则 content 为 null
   function readFile(path, cb) {
-    fetch(api(path) + '?ref=' + encodeURIComponent(getBranch()), { headers: headers() })
+    var owner = getOwner(), repo = getRepo(), branch = getBranch();
+    var repoUrl = 'https://api.github.com/repos/' + encodeURIComponent(owner) + '/' + encodeURIComponent(repo);
+    fetch(api(path) + '?ref=' + encodeURIComponent(branch), { headers: headers() })
       .then(function (r) {
-        if (r.status === 404) return { __notfound: true };
-        if (!r.ok) return r.json().then(function (j) { throw new Error('读取失败：' + (j.message || r.status)); });
-        return r.json();
+        if (r.ok) return r.json().then(function (j) { return { j: j }; });
+        if (r.status === 404) {
+          // 404 可能是"文件不存在"，也可能是"仓库填错/令牌无权"，需二次确认
+          return fetch(repoUrl, { headers: headers() }).then(function (rr) {
+            if (rr.ok) return { notfound: true };
+            return rr.json().catch(function () { return {}; }).then(function (j) {
+              throw new Error('无法访问仓库 ' + owner + '/' + repo + '：' + (j.message || rr.status) + '。请检查用户名、仓库名是否正确，令牌是否授权了这个仓库。');
+            });
+          });
+        }
+        return r.json().catch(function () { return {}; }).then(function (j) {
+          var msg = j.message || r.status;
+          if (r.status === 401 || r.status === 403) msg += '（令牌无效或权限不足，需 Contents 读和写）';
+          throw new Error('读取失败：' + msg);
+        });
       })
-      .then(function (j) {
-        if (j.__notfound) return cb(null, { content: null, sha: null });
-        cb(null, { content: base64ToUtf8(j.content), sha: j.sha });
+      .then(function (res) {
+        if (res.notfound) return cb(null, { content: null, sha: null });
+        cb(null, { content: base64ToUtf8(res.j.content), sha: res.j.sha });
       })
       .catch(function (e) { cb(e); });
   }

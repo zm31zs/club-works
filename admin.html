@@ -42,26 +42,27 @@
 
   <!-- 主体 -->
   <div id="app-panel" style="display:none">
-    <div class="panel">
+    <div class="panel bar-panel">
       <div class="toolbar">
         <button class="btn btn-primary" id="btn-save">保存并发布</button>
         <span class="status" id="status"></span>
         <span class="spacer"></span>
+        <span class="conn-info" id="conn-info"></span>
         <button class="btn" id="btn-logout">退出登录</button>
       </div>
-      <div class="help">修改后必须点「保存并发布」才会写入仓库并生效；约 30–60 秒后刷新前台可见。</div>
+      <div class="help">修改后必须点「保存并发布」才会写入仓库并生效；约 30–60 秒后刷新前台可见。删除操作可通过 Git 历史恢复。</div>
     </div>
 
     <div class="admin-cols">
       <!-- 学生列表 -->
       <div class="panel">
-        <h2>学生名单</h2>
-        <div id="student-list"></div>
-        <div class="toolbar" style="margin-top:14px">
+        <h2>学生名单 <span class="counter" id="list-count"></span></h2>
+        <div id="student-list" class="pick-list"></div>
+        <div class="toolbar" style="margin-top:12px">
           <button class="btn btn-primary btn-sm" id="btn-add-student">+ 新增学生</button>
         </div>
         <div class="divider"></div>
-        <div class="toolbar">
+        <div class="toolbar" id="student-actions" style="display:none">
           <button class="btn btn-sm" id="btn-rename">改名</button>
           <button class="btn btn-sm" id="btn-stu-visible">上架/下架</button>
           <button class="btn btn-danger btn-sm" id="btn-del-student">删除</button>
@@ -70,11 +71,11 @@
 
       <!-- 作品区 -->
       <div class="panel">
-        <h2>作品管理 · <span id="work-student-name">—</span></h2>
+        <h2>作品管理 · <span id="work-student-name">—</span> <span class="counter" id="work-count"></span></h2>
         <div class="toolbar">
           <button class="btn btn-primary btn-sm" id="btn-add-work">+ 新增作品</button>
         </div>
-        <div id="work-list"></div>
+        <div id="work-list" class="pick-list"></div>
         <input type="hidden" id="cur-wid" value="">
         <div id="edit-area"></div>
       </div>

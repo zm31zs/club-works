@@ -40,7 +40,7 @@
       }
       if (!res.content) {
         state.data = blankData(); state.sha = null;
-        status('数据文件不存在，将新建。', true);
+        status('仓库 ' + S.getOwner() + '/' + S.getRepo() + ' 的 ' + S.getBranch() + ' 分支下未找到 data/content.json（将新建）。若你有已发布作品，请确认分支填的是 main。', true);
       } else {
         try { state.data = JSON.parse(res.content); }
         catch (e) { status('数据文件格式错误：' + e.message, true); return; }
@@ -60,6 +60,8 @@
   function showApp() {
     $('login-panel').style.display = 'none';
     $('app-panel').style.display = 'block';
+    var ci = $('conn-info');
+    if (ci) ci.textContent = '已连接 ' + S.getOwner() + '/' + S.getRepo() + ' @ ' + S.getBranch();
     renderStudents();
     renderWorks();
   }
@@ -72,17 +74,24 @@
   function renderStudents() {
     var box = $('student-list');
     var list = state.data.students.slice().sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
+    var cnt = $('list-count'); if (cnt) cnt.textContent = list.length + ' 位';
+    var acts = $('student-actions'); if (acts) acts.style.display = state.selected ? 'flex' : 'none';
     if (!list.length) {
-      box.innerHTML = '<div class="mini" style="padding:10px">还没有学生，点下方「新增学生」</div>';
+      box.innerHTML = '<div class="mini empty-hint">还没有学生，点下方「新增学生」</div>';
       return;
     }
     box.innerHTML = list.map(function (s, i) {
-      var works = (s.works || []).length;
-      return '<div class="list-item ' + (s.id === state.selected ? 'active ' : '') + (s.visible === false ? 'hidden-item' : '') + '" data-sid="' + esc(s.id) + '">' +
-        '<span class="grow">' + esc(s.name) + ' <span class="mini">· ' + works + ' 件</span>' + (s.visible === false ? ' <span class="mini">[已下架]</span>' : '') + '</span>' +
+      var all = (s.works || []).length;
+      var on = (s.works || []).filter(function (w) { return w.visible !== false; }).length;
+      var initial = String(s.name || '?').charAt(0);
+      return '<div class="stu-item ' + (s.id === state.selected ? 'active ' : '') + (s.visible === false ? 'hidden-item' : '') + '" data-sid="' + esc(s.id) + '">' +
+        '<div class="stu-avatar">' + esc(initial) + '</div>' +
+        '<div class="stu-info"><div class="stu-name">' + esc(s.name) + (s.visible === false ? '<span class="tag tag-off">已下架</span>' : '') + '</div>' +
+        '<div class="stu-sub">' + on + ' 件上架' + (all !== on ? ' · 共 ' + all + ' 件' : '') + '</div></div>' +
+        '<div class="stu-sort">' +
         '<button class="btn btn-sm" data-act="up" data-sid="' + esc(s.id) + '" title="上移">↑</button>' +
         '<button class="btn btn-sm" data-act="down" data-sid="' + esc(s.id) + '" title="下移">↓</button>' +
-        '</div>';
+        '</div></div>';
     }).join('');
   }
 
@@ -90,17 +99,35 @@
   function renderWorks() {
     var box = $('work-list');
     var s = getSelected();
-    if (!s) { box.innerHTML = '<div class="mini" style="padding:10px">请先选择或新增学生</div>'; $('edit-area').innerHTML = ''; return; }
+    var cnt = $('work-count');
+    if (!s) {
+      box.innerHTML = '<div class="mini empty-hint">请在左侧选择或新增学生</div>';
+      $('edit-area').innerHTML = '';
+      $('work-student-name').textContent = '—';
+      if (cnt) cnt.textContent = '';
+      return;
+    }
     $('work-student-name').textContent = s.name;
     var list = (s.works || []).slice().sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
-    if (!list.length) { box.innerHTML = '<div class="mini" style="padding:10px">该学生还没有作品</div>'; }
+    if (cnt) cnt.textContent = list.length + ' 件';
+    if (!list.length) { box.innerHTML = '<div class="mini empty-hint">该学生还没有作品，点上方「新增作品」</div>'; }
     else {
+      var cur = $('cur-wid') ? $('cur-wid').value : '';
       box.innerHTML = list.map(function (w) {
-        return '<div class="list-item ' + (w.visible === false ? 'hidden-item' : '') + '" data-wid="' + esc(w.id) + '">' +
-          '<span class="grow">' + esc(w.title) + (w.visible === false ? ' <span class="mini">[已下架]</span>' : '') + '</span>' +
-          '<button class="btn btn-sm" data-act="wup" data-wid="' + esc(w.id) + '">↑</button>' +
-          '<button class="btn btn-sm" data-act="wdown" data-wid="' + esc(w.id) + '">↓</button>' +
-          '</div>';
+        var img = String(w.image || '');
+        var thumb = img
+          ? '<img class="work-thumb" src="' + esc(img) + '" alt="">'
+          : '<div class="work-thumb ph">无图</div>';
+        var linkTag = w.link && /^https?:\/\//i.test(w.link) ? '<span class="tag tag-on">有链接</span>' : '';
+        return '<div class="work-item ' + (cur === w.id ? 'active ' : '') + (w.visible === false ? 'hidden-item' : '') + '" data-wid="' + esc(w.id) + '">' +
+          thumb +
+          '<div class="work-info"><div class="work-title">' + esc(w.title) +
+          (w.visible === false ? '<span class="tag tag-off">已下架</span>' : linkTag) + '</div>' +
+          '<div class="work-sub">' + (w.desc ? esc(w.desc).slice(0, 40) + (w.desc.length > 40 ? '…' : '') : '暂无介绍') + '</div></div>' +
+          '<div class="stu-sort">' +
+          '<button class="btn btn-sm" data-act="wup" data-wid="' + esc(w.id) + '" title="上移">↑</button>' +
+          '<button class="btn btn-sm" data-act="wdown" data-wid="' + esc(w.id) + '" title="下移">↓</button>' +
+          '</div></div>';
       }).join('');
     }
     renderEditForm();
