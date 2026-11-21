@@ -174,7 +174,6 @@ a:hover { text-decoration: none; }
   box-shadow: 0 0 18px rgba(46, 230, 255, .45);
 }
 .name-card .nm { font-size: 18px; font-weight: 700; color: var(--text); }
-.name-card .new-tab { color: var(--neon-pink); }
 .name-card .cnt { margin-top: 6px; color: var(--muted); }
 
 /* ====== 作品卡片 ====== */

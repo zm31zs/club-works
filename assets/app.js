@@ -71,9 +71,9 @@
     box.innerHTML = list.map(function (s) {
       var works = (s.works || []).filter(function (w) { return w.visible !== false; });
       var initial = String(s.name || '?').charAt(0);
-      return '<a class="name-card" href="student.html?id=' + encodeURIComponent(s.id) + '" target="_blank" rel="noopener noreferrer">' +
+      return '<a class="name-card" href="student.html?id=' + encodeURIComponent(s.id) + '">' +
         '<div class="avatar">' + esc(initial) + '</div>' +
-        '<div class="nm">' + esc(s.name) + '<span class="new-tab" title="在新窗口打开">↗</span></div>' +
+        '<div class="nm">' + esc(s.name) + '</div>' +
         '<div class="cnt">' + works.length + ' 件作品</div></a>';
     }).join('');
   }
