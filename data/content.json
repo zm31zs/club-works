@@ -5,7 +5,7 @@
   "students": [
     {
       "id": "s_linnathan",
-      "name": "linnathan",
+      "name": "Nathan",
       "visible": true,
       "order": 1,
       "works": [
@@ -22,7 +22,7 @@
     },
     {
       "id": "s_liuzhaorui",
-      "name": "刘钊睿",
+      "name": "MaxLiu",
       "visible": true,
       "order": 2,
       "works": [
@@ -39,7 +39,7 @@
     },
     {
       "id": "s_nihaozhe",
-      "name": "倪浩哲",
+      "name": "NickyNi",
       "visible": true,
       "order": 3,
       "works": [
@@ -56,7 +56,7 @@
     },
     {
       "id": "s_suhaoxuan",
-      "name": "苏浩轩",
+      "name": "EasonSu",
       "visible": true,
       "order": 4,
       "works": [
@@ -73,7 +73,7 @@
     },
     {
       "id": "s_zhangjiaen",
-      "name": "张佳恩",
+      "name": "DavidZhang",
       "visible": true,
       "order": 5,
       "works": [
@@ -83,6 +83,40 @@
           "desc": "",
           "image": "",
           "link": "https://www.miaoda.cn/share/conversation?id=cs-854b149042954758a5bfa806b0dbef92",
+          "visible": true,
+          "order": 1
+        }
+      ]
+    },
+    {
+      "id": "s_mwq55kt9754",
+      "name": "AlanXiao",
+      "visible": true,
+      "order": 6,
+      "works": [
+        {
+          "id": "w_mwq55vd6491",
+          "title": "方块远征",
+          "desc": "",
+          "image": "",
+          "link": "https://block-quest-23253.app.workbuddy.host/?sharecode=UHW2SEWPSB",
+          "visible": true,
+          "order": 1
+        }
+      ]
+    },
+    {
+      "id": "s_mwq58zjf504",
+      "name": "BillYu",
+      "visible": true,
+      "order": 7,
+      "works": [
+        {
+          "id": "w_mwq59dxy145",
+          "title": "单词大冒险",
+          "desc": "",
+          "image": "",
+          "link": "https://app-fpoiacwlcvlt.miaoda.online/",
           "visible": true,
           "order": 1
         }
