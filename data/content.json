@@ -157,6 +157,23 @@
           "order": 2
         }
       ]
+    },
+    {
+      "id": "s_mwyq7a9q173",
+      "name": "TobyTao",
+      "visible": true,
+      "order": 9,
+      "works": [
+        {
+          "id": "w_mwyq7qs0547",
+          "title": "错题分析工具",
+          "desc": "",
+          "image": "",
+          "link": "https://ai-mistake-analyzer-04024.app.workbuddy.host/?sharecode=3FKTZHBG4F&shareId=28d168a6f4844cffa9d681f6d8e2dbe9",
+          "visible": true,
+          "order": 1
+        }
+      ]
     }
   ]
 }
