@@ -65,6 +65,15 @@
       </div>
     </div>
 
+    <div class="panel">
+      <div class="toolbar">
+        <h2 style="margin:0;flex:1">点赞排行 <span class="counter" id="rank-count"></span></h2>
+        <button class="btn btn-sm" id="btn-rank-refresh">刷新排名</button>
+      </div>
+      <div class="help">按累计点赞数排名。学生榜统计每位同学全部作品的总赞数；作品榜统计单个作品。数据来源为 CloudBase，打开后台自动加载。</div>
+      <div id="rank-box" class="rank-box"><div class="mini">正在加载排名…</div></div>
+    </div>
+
     <div class="admin-cols">
       <!-- 学生列表 -->
       <div class="panel">
@@ -114,6 +123,7 @@
 
 <script src="assets/config.js"></script>
 <script src="assets/store.js"></script>
+<script src="assets/social.js"></script>
 <script src="assets/admin.js"></script>
 </body>
 </html>

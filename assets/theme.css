@@ -248,3 +248,49 @@ a:hover { text-decoration: none; }
   .btn-back { padding: 11px 20px; font-size: 15px; }
   .name-card { padding: 22px 14px; }
 }
+
+/* ====== 互动区：点赞 + 留言（深空霓虹风） ====== */
+.social { margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(46,230,255,.14); }
+.like-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 7px 16px; border-radius: 999px; cursor: pointer;
+  background: rgba(46,230,255,.07); border: 1px solid rgba(46,230,255,.35);
+  color: var(--neon-blue); font-size: 14px; font-weight: 600;
+  transition: all .2s ease;
+}
+.like-btn:hover { background: rgba(46,230,255,.16); box-shadow: 0 0 14px rgba(46,230,255,.3); }
+.like-btn .like-ico { font-size: 19px; line-height: 1; }
+.like-btn.liked { background: rgba(255,75,216,.14); border-color: rgba(255,75,216,.55); color: var(--neon-pink); box-shadow: 0 0 14px rgba(255,75,216,.25); }
+.like-btn:disabled { opacity: .55; cursor: wait; }
+
+.cmt-box { margin-top: 16px; }
+.cmt-head { font-size: 13px; font-weight: 600; color: var(--neon-purple); margin-bottom: 10px; letter-spacing: .5px; }
+.cmt-num { color: var(--muted); font-weight: 400; }
+.cmt-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+.cmt-empty { font-size: 13px; color: var(--muted); padding: 8px 0; }
+.cmt-item {
+  background: rgba(255,255,255,.04); border: 1px solid rgba(177,75,255,.2);
+  border-radius: 10px; padding: 10px 12px;
+}
+.cmt-meta { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 5px; }
+.cmt-meta b { color: var(--neon-blue); font-size: 13px; font-weight: 600; }
+.cmt-meta span { color: var(--muted); font-size: 11px; }
+.cmt-content { color: var(--text); font-size: 13px; line-height: 1.55; word-break: break-word; white-space: pre-wrap; }
+.cmt-form { display: flex; flex-direction: column; gap: 8px; }
+.cmt-form input, .cmt-form textarea {
+  width: 100%; box-sizing: border-box; font-family: inherit; font-size: 13px;
+  padding: 9px 12px; border-radius: 9px; color: var(--text);
+  background: rgba(8,12,32,.7); border: 1px solid rgba(46,230,255,.22); outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+.cmt-form input::placeholder, .cmt-form textarea::placeholder { color: var(--muted); }
+.cmt-form input:focus, .cmt-form textarea:focus { border-color: var(--neon-blue); box-shadow: 0 0 0 3px rgba(46,230,255,.12); }
+.cmt-form textarea { min-height: 62px; resize: vertical; }
+.cmt-send {
+  align-self: flex-start; padding: 7px 18px; font-size: 13px; cursor: pointer;
+  background: linear-gradient(90deg, #2ee6ff, #b14bff); color: #fff;
+  border: none; border-radius: 999px; font-weight: 600;
+}
+.cmt-send:hover { box-shadow: 0 0 16px rgba(46,230,255,.35); }
+.cmt-send:disabled { opacity: .55; cursor: wait; }
+.social-hint { margin-top: 10px; font-size: 12px; color: #ff9aae; }

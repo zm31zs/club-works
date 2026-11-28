@@ -155,10 +155,97 @@
     if (sbEl) sbEl.value = meta.subtitle || C.siteSubtitle || '';
     renderStudents();
     renderWorks();
+    loadRank();
   }
   function showLogin() {
     $('login-panel').style.display = 'block';
     $('app-panel').style.display = 'none';
+  }
+
+  // 点赞排行：学生榜（累计全部作品）+ 作品榜（单个作品）
+  function loadRank() {
+    var box = $('rank-box');
+    if (!box) return;
+    var Soc = global.CWSocial;
+    if (!Soc || !Soc.configured()) {
+      box.innerHTML = '<div class="mini">互动功能未配置。开通 CloudBase 后，在 assets/config.js 填入环境 ID 与 Publishable Key 即可显示排名。</div>';
+      var c0 = $('rank-count'); if (c0) c0.textContent = '';
+      return;
+    }
+    box.innerHTML = '<div class="mini">正在加载排名…</div>';
+    Soc.loadAll(function (err, all) {
+      if (err) {
+        box.innerHTML = '<div class="mini status err">排名加载失败：' + esc(err.message) + '</div>';
+        return;
+      }
+      renderRank(all);
+    });
+  }
+
+  function renderRank(all) {
+    var box = $('rank-box');
+    var likes = all.likes || [];
+
+    // 作品 id -> { title, studentId, studentName }
+    var workMap = {};
+    (state.data.students || []).forEach(function (s) {
+      (s.works || []).forEach(function (w) {
+        workMap[w.id] = { title: w.title || '未命名作品', studentId: s.id, studentName: s.name || '' };
+      });
+    });
+
+    var stu = {}, work = {};
+    likes.forEach(function (x) {
+      var wid = x.workId, sid = x.studentId;
+      if (wid && workMap[wid]) {
+        work[wid] = (work[wid] || 0) + 1;
+        var owner = workMap[wid].studentId;
+        if (owner) stu[owner] = (stu[owner] || 0) + 1;
+      } else if (sid) {
+        stu[sid] = (stu[sid] || 0) + 1;
+      }
+    });
+
+    function toList(map, decorate) {
+      return Object.keys(map).map(function (id) {
+        var o = decorate(id);
+        return { id: id, name: o.name, sub: o.sub || '', n: map[id] };
+      }).sort(function (a, b) { return b.n - a.n; });
+    }
+    var stuList = toList(stu, function (id) {
+      var s = (state.data.students || []).filter(function (x) { return x.id === id; })[0];
+      return { name: s ? s.name : id };
+    });
+    var workList = toList(work, function (id) {
+      var w = workMap[id];
+      return { name: w.title, sub: w.studentName };
+    });
+
+    var total = likes.length;
+    var c = $('rank-count'); if (c) c.textContent = total + ' 赞';
+
+    function rows(list, empty) {
+      if (!list.length) return '<div class="mini">' + empty + '</div>';
+      return list.slice(0, 20).map(function (o, i) {
+        var medal = i === 0 ? '①' : (i === 1 ? '②' : (i === 2 ? '③' : (i + 1) + '.'));
+        var rt = o.sub ? '<span class="rank-sub">' + esc(o.sub) + '</span>' : '';
+        var link = '';
+        if (o.id && workMap[o.id]) {
+          link = '<a class="rank-link" href="student.html?id=' + encodeURIComponent(workMap[o.id].studentId) + '" target="_blank" rel="noopener noreferrer">查看</a>';
+        } else if (o.id) {
+          link = '<a class="rank-link" href="student.html?id=' + encodeURIComponent(o.id) + '" target="_blank" rel="noopener noreferrer">查看</a>';
+        }
+        return '<div class="rank-row"><span class="rank-no">' + medal + '</span>' +
+          '<span class="rank-name">' + esc(o.name) + rt + '</span>' +
+          '<span class="rank-num">' + o.n + ' 赞</span>' + link + '</div>';
+      }).join('');
+    }
+
+    box.innerHTML =
+      '<div class="rank-cols">' +
+        '<div class="rank-col"><h3>学生榜 <span class="mini">累计</span></h3>' + rows(stuList, '暂无点赞数据') + '</div>' +
+        '<div class="rank-col"><h3>作品榜 <span class="mini">单个作品</span></h3>' + rows(workList, '暂无点赞数据') + '</div>' +
+      '</div>';
   }
 
   // 学生列表
@@ -419,6 +506,7 @@
       });
     };
     $('btn-save').onclick = saveAll;
+    $('btn-rank-refresh').onclick = function () { loadRank(); status('排名已刷新'); };
 
     // 网站标题设置
     ['set-title', 'set-subtitle'].forEach(function (id) {

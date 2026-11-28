@@ -108,10 +108,110 @@
       var btn = link
         ? '<a class="work-link" href="' + esc(link) + '" target="_blank" rel="noopener noreferrer">查看作品 →</a>'
         : '<span class="work-link disabled">暂无链接</span>';
+      var social = '';
+      if (global.CWSocial && global.CWSocial.configured()) {
+        social = '<div class="social" data-work="' + esc(w.id) + '" data-student="' + esc(s.id) + '">' +
+          '<button class="like-btn" type="button" aria-label="点赞"><span class="like-ico">♡</span> <span class="like-num">0</span></button>' +
+          '<div class="cmt-box">' +
+            '<div class="cmt-head">留言 <span class="cmt-num">0</span></div>' +
+            '<div class="cmt-list"><div class="cmt-empty">暂无留言，来说两句吧</div></div>' +
+            '<div class="cmt-form">' +
+              '<input class="cmt-nick" maxlength="20" placeholder="你的昵称（选填）">' +
+              '<textarea class="cmt-text" maxlength="300" placeholder="写下你的留言…"></textarea>' +
+              '<button class="cmt-send btn" type="button">发表留言</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }
       return '<article class="work-card">' + cover +
         '<div class="work-body"><h3 class="work-title">' + esc(w.title) + '</h3>' +
         (w.desc ? '<p class="work-desc">' + esc(w.desc) + '</p>' : '<p class="work-desc"></p>') +
-        btn + '</div></article>';
+        btn + social + '</div></article>';
+    }).join('');
+    if (global.CWSocial && global.CWSocial.configured()) loadSocial();
+  }
+
+  // 载入互动数据并绑定事件
+  function loadSocial() {
+    var S = global.CWSocial;
+    S.loadAll(function (err, all) {
+      if (err) { setSocialHint('互动数据加载失败：' + err.message); return; }
+      var st = S.stats(all);
+      var boxes = document.querySelectorAll('.social[data-work]');
+      for (var i = 0; i < boxes.length; i++) bindSocialBox(boxes[i], st, all.comments || []);
+    });
+  }
+
+  function setSocialHint(msg) {
+    var box = document.querySelector('.social');
+    if (!box) return;
+    var h = document.createElement('div');
+    h.className = 'social-hint'; h.textContent = msg;
+    box.appendChild(h);
+  }
+
+  function bindSocialBox(box, st, comments) {
+    var workId = box.getAttribute('data-work');
+    var studentId = box.getAttribute('data-student') || '';
+    var numEl = box.querySelector('.like-num');
+    var icoEl = box.querySelector('.like-ico');
+    var likeBtn = box.querySelector('.like-btn');
+    var info = st[workId] || { likes: 0, comments: 0, liked: false };
+    numEl.textContent = info.likes;
+    icoEl.textContent = info.liked ? '♥' : '♡';
+    likeBtn.classList.toggle('liked', !!info.liked);
+
+    var listEl = box.querySelector('.cmt-list');
+    var numC = box.querySelector('.cmt-num');
+    var mine = comments.filter(function (c) { return c.workId === workId; });
+    renderComments(listEl, mine);
+    numC.textContent = mine.length;
+
+    likeBtn.onclick = function () {
+      likeBtn.disabled = true;
+      global.CWSocial.toggleLike(workId, studentId, function (err, liked) {
+        likeBtn.disabled = false;
+        if (err) { alert('点赞失败：' + err.message); return; }
+        info.likes += liked ? 1 : -1;
+        if (info.likes < 0) info.likes = 0;
+        info.liked = liked;
+        numEl.textContent = info.likes;
+        icoEl.textContent = liked ? '♥' : '♡';
+        likeBtn.classList.toggle('liked', !!liked);
+      });
+    };
+
+    var sendBtn = box.querySelector('.cmt-send');
+    sendBtn.onclick = function () {
+      var nickEl = box.querySelector('.cmt-nick');
+      var textEl = box.querySelector('.cmt-text');
+      var text = (textEl.value || '').trim();
+      if (!text) { textEl.focus(); return; }
+      sendBtn.disabled = true;
+      global.CWSocial.addComment(workId, studentId, (nickEl.value || '').trim(), text, function (err) {
+        sendBtn.disabled = false;
+        if (err) { alert('留言失败：' + err.message); return; }
+        textEl.value = '';
+        mine.push({ workId: workId, nickname: (nickEl.value || '').trim() || '同学', content: text, createdAt: Date.now() });
+        renderComments(listEl, mine);
+        numC.textContent = mine.length;
+      });
+    };
+  }
+
+  function renderComments(listEl, rows) {
+    if (!rows || !rows.length) {
+      listEl.innerHTML = '<div class="cmt-empty">暂无留言，来说两句吧</div>';
+      return;
+    }
+    var S = global.CWSocial;
+    listEl.innerHTML = rows.map(function (c) {
+      var nick = S.esc((c.nickname || '同学').slice(0, 20));
+      var text = S.esc(c.content || '');
+      var time = S.timeText(c.createdAt);
+      return '<div class="cmt-item"><div class="cmt-meta"><b>' + nick + '</b>' +
+        (time ? '<span>' + S.esc(time) + '</span>' : '') + '</div>' +
+        '<div class="cmt-content">' + text + '</div></div>';
     }).join('');
   }
 
